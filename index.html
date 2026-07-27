@@ -743,7 +743,7 @@
   .cycle-strip .cs-left{display:flex;align-items:center;gap:8px;min-width:0;}
   .cycle-strip .cs-left svg{width:16px;height:16px;stroke:var(--teal);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;}
   .cycle-strip .cs-name{font-size:13.5px;font-weight:600;color:var(--teal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .cycle-strip .cs-since{font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap;}
+  .cycle-strip .cs-since{font-family:var(--mono);font-size:11.5px;color:var(--muted);}
 
   .dash-compact-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px;}
   .dash-compact-head .label{
@@ -760,6 +760,22 @@
     background:var(--bg-alt);color:var(--ink);border:1px solid var(--line);
   }
   .dash-compact-total{font-family:var(--mono);font-size:12px;color:var(--muted);}
+
+  .ln-row{
+    display:flex;align-items:center;gap:10px;
+    padding:12px 4px;border-bottom:1px solid var(--line);
+    cursor:pointer;
+  }
+  .ln-row:last-child{border-bottom:none;}
+  .ln-row:active{background:var(--card-hi);}
+  .ln-row .ln-label{
+    display:flex;align-items:center;gap:6px;flex:none;
+    font-family:var(--mono);font-size:11px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.05em;width:76px;
+  }
+  .ln-row .ln-label svg{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+  .ln-row .ln-time{font-family:var(--display);font-weight:700;font-size:14px;flex:1;}
+  .ln-row .ln-meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);flex:none;text-align:right;}
   .dash-compact-total b{color:var(--ink);font-weight:600;}
 
 
@@ -1093,8 +1109,7 @@
     <div id="dash-alert"></div>
     <div class="cycle-strip" id="dash-cycle"></div>
     <div class="dash-grid">
-      <div class="dash-card wide" id="dash-last"></div>
-      <div class="dash-card wide" id="dash-next"></div>
+      <div class="dash-card wide" id="dash-lastnext"></div>
       <div class="dash-card wide" id="dash-week"></div>
       <div class="dash-card wide" id="dash-spending"></div>
       <details class="dash-card wide dash-collapsible">
@@ -1662,6 +1677,21 @@
   </div>
 </div>
 
+<!-- MODAL: DETALHE DA APLICAÇÃO (última/próxima) -->
+<div class="modal-overlay" id="modal-application-detail">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h2 id="app-detail-title">Detalhe da aplicação</h2>
+      <button type="button" class="modal-close" data-close-modal aria-label="Fechar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="panel">
+        <div id="app-detail-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: DETALHES DO CICLO -->
 <div class="modal-overlay" id="modal-cycle-detail">
   <div class="modal-sheet">
@@ -2090,6 +2120,8 @@ let bloodTests = [];
 let userProfile = {};
 let weightLogs = [];
 let stockEntries = [];
+let lastAppDetailData = null;
+let nextAppDetailData = null;
 
 const WEEKDAY_LABELS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
@@ -2369,12 +2401,11 @@ document.getElementById('cal-next').addEventListener('click', () => {
 
 function renderDashboard(){
   const alertBox = document.getElementById('dash-alert');
-  const lastCard = document.getElementById('dash-last');
-  const nextCard = document.getElementById('dash-next');
+  const lastNextCard = document.getElementById('dash-lastnext');
   const cycleCard = document.getElementById('dash-cycle');
   const weekCard = document.getElementById('dash-week');
   const stockList = document.getElementById('dash-stock-list');
-  if (!alertBox || !lastCard || !nextCard || !cycleCard || !weekCard || !stockList) return;
+  if (!alertBox || !lastNextCard || !cycleCard || !weekCard || !stockList) return;
 
   // alerta de estoque baixo/esgotado
   const lowStock = substances.filter(s => s.availableMl <= 0 || s.availableMl <= s.startMl * 0.15);
@@ -2382,7 +2413,8 @@ function renderDashboard(){
     ? `<div class="banner warn">Estoque pede atenção: ${lowStock.map(s => escapeHtml(s.name) + (s.availableMl <= 0 ? ' (esgotada)' : ' (baixo)')).join(' · ')}.</div>`
     : '';
 
-  // última aplicação (agrupada por lote de registro)
+  // última e próxima aplicação (card único, linhas clicáveis com detalhe)
+  let lastRowHtml = '';
   if (applications.length) {
     const batch = getBatchEntries(applications[0]);
     const first = batch[0];
@@ -2394,24 +2426,19 @@ function renderDashboard(){
       const price = avgPricePerMl(a.substanceId);
       if (price !== null) batchCost += price * (a.mlApplied || 0); else batchCostIncomplete = true;
     });
-    const chips = batch.map(a => `<span class="chip">${escapeHtml(appSubLabel(a))}</span>`).join('');
-    lastCard.innerHTML = `
-      <div class="dash-compact-head">
-        <span class="label">${dashIcon('clock')}última aplicação</span>
-        <span class="time">${date ? formatRelative(date) : 'agora mesmo'}</span>
-      </div>
-      ${first.cycleName ? `<div class="chip-row"><span class="chip" style="background:var(--ok-tint);border-color:var(--teal-dim);color:var(--teal);">${escapeHtml(first.cycleName)}</span></div>` : ''}
-      <div class="chip-row">${chips}</div>
-      <div class="dash-compact-total">Total <b>${fmt(totalMl)} ml · ${fmt(totalMg)} mg</b>${batchCost > 0 ? ` · <b>${fmtCurrency(batchCost)}</b>${batchCostIncomplete ? ' (parcial)' : ''}` : ''}</div>
-    `;
+    lastAppDetailData = { kind: 'last', dateLabel: date ? formatRelative(date) : 'agora mesmo', protocol: first.cycleName || null, rows: batch.map(a => ({ label: appSubLabel(a), ml: a.mlApplied, mg: a.mgApplied, site: a.site, notes: a.notes })) };
+    lastRowHtml = `
+      <div class="ln-row" data-lnrow="last">
+        <span class="ln-label">${dashIcon('clock')}Última</span>
+        <span class="ln-time">${date ? formatRelative(date) : 'agora mesmo'}</span>
+        <span class="ln-meta">${fmt(totalMl)} ml${batchCost > 0 ? ` · ${fmtCurrency(batchCost)}${batchCostIncomplete ? ' (parcial)' : ''}` : ''}</span>
+      </div>`;
   } else {
-    lastCard.innerHTML = `
-      <div class="dash-compact-head"><span class="label">${dashIcon('clock')}última aplicação</span></div>
-      <div class="sub-value">Nenhuma aplicação registrada ainda.</div>
-    `;
+    lastAppDetailData = null;
+    lastRowHtml = `<div class="ln-row"><span class="ln-label">${dashIcon('clock')}Última</span><span class="ln-meta">nenhuma ainda</span></div>`;
   }
 
-  // próxima aplicação (agrupa substâncias previstas para o mesmo dia/horário)
+  let nextRowHtml = '';
   const now = new Date();
   const occurrences = [];
   cycles.forEach(c => {
@@ -2424,36 +2451,31 @@ function renderDashboard(){
     const minTime = Math.min(...occurrences.map(o => o.date.getTime()));
     const batch = occurrences.filter(o => o.date.getTime() === minTime);
     const totalMl = batch.reduce((sum, o) => sum + (parseFloat(o.item.doseMl) || 0), 0);
-    const totalMg = batch.reduce((sum, o) => {
-      const sub = substances.find(s => s.id === o.item.substanceId);
-      return sum + (sub ? sub.concentrationMgMl * o.item.doseMl : 0);
-    }, 0);
     let batchCost = 0, batchCostIncomplete = false;
     batch.forEach(o => {
       const price = avgPricePerMl(o.item.substanceId);
       if (price !== null) batchCost += price * (parseFloat(o.item.doseMl) || 0); else batchCostIncomplete = true;
     });
-    const chips = batch.map(o => {
-      const sub = substances.find(s => s.id === o.item.substanceId);
-      const label = subLabel(sub);
-      return `<span class="chip">${escapeHtml(label)}</span>`;
-    }).join('');
     const protocolLabel = [...new Set(batch.map(o => o.cycle.name))].join(', ');
-    nextCard.innerHTML = `
-      <div class="dash-compact-head">
-        <span class="label">${dashIcon('calendar')}próxima aplicação</span>
-        <span class="time">${formatUpcoming(new Date(minTime))}</span>
-      </div>
-      ${protocolLabel ? `<div class="chip-row"><span class="chip" style="background:var(--ok-tint);border-color:var(--teal-dim);color:var(--teal);">${escapeHtml(protocolLabel)}</span></div>` : ''}
-      <div class="chip-row">${chips}</div>
-      <div class="dash-compact-total">Total <b>${fmt(totalMl)} ml · ${fmt(totalMg)} mg</b>${batchCost > 0 ? ` · <b>${fmtCurrency(batchCost)}</b>${batchCostIncomplete ? ' (parcial)' : ''}` : ''}</div>
-    `;
+    nextAppDetailData = {
+      kind: 'next', dateLabel: formatUpcoming(new Date(minTime)), protocol: protocolLabel || null,
+      rows: batch.map(o => {
+        const sub = substances.find(s => s.id === o.item.substanceId);
+        return { label: subLabel(sub), ml: o.item.doseMl, mg: sub ? sub.concentrationMgMl * o.item.doseMl : null };
+      })
+    };
+    nextRowHtml = `
+      <div class="ln-row" data-lnrow="next">
+        <span class="ln-label">${dashIcon('calendar')}Próxima</span>
+        <span class="ln-time">${formatUpcoming(new Date(minTime))}</span>
+        <span class="ln-meta">${fmt(totalMl)} ml${batchCost > 0 ? ` · ${fmtCurrency(batchCost)}${batchCostIncomplete ? ' (parcial)' : ''}` : ''}</span>
+      </div>`;
   } else {
-    nextCard.innerHTML = `
-      <div class="dash-compact-head"><span class="label">${dashIcon('calendar')}próxima aplicação</span></div>
-      <div class="sub-value">Cadastre um ciclo com dias definidos para ver a previsão aqui.</div>
-    `;
+    nextAppDetailData = null;
+    nextRowHtml = `<div class="ln-row"><span class="ln-label">${dashIcon('calendar')}Próxima</span><span class="ln-meta">cadastre um ciclo</span></div>`;
   }
+
+  lastNextCard.innerHTML = lastRowHtml + nextRowHtml;
 
   // ciclo atual (tira compacta no topo)
   const activeCycle = cycles.find(c => c.active);
@@ -3150,6 +3172,46 @@ function shareCycleOnWhatsApp(cycle){
 }
 
 let cycleDetailId = null;
+
+function openApplicationDetail(data){
+  if (!data) return;
+  const titleEl = document.getElementById('app-detail-title');
+  const content = document.getElementById('app-detail-content');
+  titleEl.textContent = data.kind === 'last' ? 'Última aplicação' : 'Próxima aplicação';
+
+  const totalMl = data.rows.reduce((s, r) => s + (r.ml || 0), 0);
+  const totalMg = data.rows.reduce((s, r) => s + (r.mg || 0), 0);
+
+  let html = `
+    <div class="report-header" style="border-bottom:2px solid var(--line);padding-bottom:14px;margin-bottom:6px;">
+      <div class="rh-title">${escapeHtml(data.dateLabel)}</div>
+      ${data.protocol ? `<div class="rh-meta">${escapeHtml(data.protocol)}</div>` : ''}
+    </div>
+    <table class="report-table"><thead><tr><th>Substância</th><th>Ml</th><th>Mg</th>${data.kind === 'last' ? '<th>Local</th>' : ''}</tr></thead><tbody>
+  `;
+  data.rows.forEach(r => {
+    html += `<tr><td>${escapeHtml(r.label)}</td><td>${fmt(r.ml)} ml</td><td>${r.mg !== null && r.mg !== undefined ? fmt(r.mg) + ' mg' : '—'}</td>${data.kind === 'last' ? `<td>${r.site ? escapeHtml(r.site) : '—'}</td>` : ''}</tr>`;
+  });
+  html += `</tbody></table>`;
+  html += `<div class="report-stats" style="margin-top:12px;">
+    <div class="rs-item"><span class="rs-label">Total</span><span class="rs-val">${fmt(totalMl)} ml</span></div>
+    <div class="rs-item"><span class="rs-label">&nbsp;</span><span class="rs-val">${fmt(totalMg)} mg</span></div>
+  </div>`;
+  const notesRows = data.rows.filter(r => r.notes);
+  if (notesRows.length) {
+    html += `<h3>Observações</h3>`;
+    notesRows.forEach(r => { html += `<div class="report-empty" style="color:var(--ink);">${escapeHtml(r.label)}: ${escapeHtml(r.notes)}</div>`; });
+  }
+
+  content.innerHTML = html;
+  openModal('modal-application-detail');
+}
+
+document.getElementById('dash-lastnext').addEventListener('click', (e) => {
+  const row = e.target.closest('[data-lnrow]');
+  if (!row) return;
+  openApplicationDetail(row.dataset.lnrow === 'last' ? lastAppDetailData : nextAppDetailData);
+});
 
 function openCycleDetail(cycle){
   cycleDetailId = cycle.id;
