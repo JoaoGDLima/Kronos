@@ -1440,7 +1440,8 @@
     </div>
     <div class="modal-body">
       <div class="panel">
-        <h2>Nova avaliação <span class="n">// registro</span></h2>
+        <h2 id="assess-form-title">Nova avaliação <span class="n">// registro</span></h2>
+        <div id="assess-editing-banner"></div>
         <form id="form-assessment">
           <label>Data do lançamento</label>
           <input type="date" id="assess-date" required>
@@ -4338,6 +4339,44 @@ JP7_KEYS.forEach(key => {
 const formAssessment = document.getElementById('form-assessment');
 const assessDateInput = document.getElementById('assess-date');
 assessDateInput.value = new Date().toISOString().slice(0, 10);
+const assessFormTitle = document.getElementById('assess-form-title');
+const assessEditingBanner = document.getElementById('assess-editing-banner');
+const assessSubmitBtn = document.getElementById('assess-submit');
+let editingAssessmentId = null;
+
+function resetAssessmentForm(){
+  formAssessment.reset();
+  assessDateInput.value = new Date().toISOString().slice(0, 10);
+  updateAssessBfNote();
+}
+
+function startEditAssessment(a){
+  editingAssessmentId = a.id;
+  assessDateInput.value = a.date || new Date().toISOString().slice(0, 10);
+  ASSESS_SKINFOLD_FIELDS.forEach(f => {
+    document.getElementById(f.id).value = a['skin_' + f.key] ?? '';
+  });
+  ASSESS_CIRC_FIELDS.forEach(f => {
+    document.getElementById(f.id).value = a['circ_' + f.key] ?? '';
+  });
+  document.getElementById('assess-notes').value = a.notes || '';
+  updateAssessBfNote();
+
+  assessFormTitle.innerHTML = 'Editar avaliação <span class="n">// alterações</span>';
+  assessSubmitBtn.textContent = 'Salvar alterações';
+  const dateLabel = new Date(a.date + 'T00:00:00').toLocaleDateString('pt-BR');
+  assessEditingBanner.innerHTML = `<div class="editing-banner">Editando avaliação de ${dateLabel}<button type="button" id="assess-cancel-edit">cancelar</button></div>`;
+  document.getElementById('assess-cancel-edit').addEventListener('click', cancelEditAssessment);
+  assessDateInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelEditAssessment(){
+  editingAssessmentId = null;
+  resetAssessmentForm();
+  assessFormTitle.innerHTML = 'Nova avaliação <span class="n">// registro</span>';
+  assessSubmitBtn.textContent = 'Salvar avaliação';
+  assessEditingBanner.innerHTML = '';
+}
 
 formAssessment.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -4346,7 +4385,7 @@ formAssessment.addEventListener('submit', async (e) => {
   if (!date) return;
   const notes = document.getElementById('assess-notes').value.trim();
 
-  const data = { date, notes, createdAt: serverTimestamp() };
+  const data = { date, notes };
   ASSESS_SKINFOLD_FIELDS.forEach(f => {
     const raw = document.getElementById(f.id).value;
     if (raw !== '') data['skin_' + f.key] = parseFloat(raw);
@@ -4365,13 +4404,23 @@ formAssessment.addEventListener('submit', async (e) => {
     data.bodyFatMethod = 'Jackson & Pollock (7 dobras) + Siri';
     data.ageAtAssessment = age;
     data.sexAtAssessment = sex;
+  } else {
+    data.bodyFatPercent = null;
+    data.bodyFatMethod = null;
+    data.ageAtAssessment = null;
+    data.sexAtAssessment = null;
   }
 
-  await addDoc(userCollection('bodyAssessments'), data);
-  showToast('Avaliação registrada.');
-  formAssessment.reset();
-  assessDateInput.value = new Date().toISOString().slice(0, 10);
-  updateAssessBfNote();
+  if (editingAssessmentId) {
+    await updateDoc(userDoc('bodyAssessments', editingAssessmentId), data);
+    showToast('Alterações salvas.');
+    cancelEditAssessment();
+  } else {
+    data.createdAt = serverTimestamp();
+    await addDoc(userCollection('bodyAssessments'), data);
+    showToast('Avaliação registrada.');
+    resetAssessmentForm();
+  }
 });
 
 function renderAssessmentList(){
@@ -4397,7 +4446,10 @@ function renderAssessmentList(){
     <div class="exam-item">
       <div class="exam-item-top">
         <span class="exam-date">${dateLabel}</span>
-        <button type="button" data-del-assess="${a.id}" title="Apagar"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
+        <div class="hist-item-actions">
+          <button type="button" data-edit-assess="${a.id}" title="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+          <button type="button" class="del" data-del-assess="${a.id}" title="Apagar"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
+        </div>
       </div>
       ${a.bodyFatPercent !== undefined && a.bodyFatPercent !== null ? `<div class="report-stats" style="margin-bottom:10px;"><div class="rs-item"><span class="rs-label">% de gordura (${escapeHtml(a.bodyFatMethod || 'JP7 + Siri')})</span><span class="rs-val">${fmt(a.bodyFatPercent)}%</span></div></div>` : ''}
       ${skinVals ? `<div class="exam-values">${skinVals}</div>` : ''}
@@ -4407,10 +4459,18 @@ function renderAssessmentList(){
     </div>`;
   }).join('');
 
+  box.querySelectorAll('[data-edit-assess]').forEach(b => {
+    b.addEventListener('click', () => {
+      const a = bodyAssessments.find(x => x.id === b.dataset.editAssess);
+      if (a) startEditAssessment(a);
+    });
+  });
+
   box.querySelectorAll('[data-del-assess]').forEach(b => {
     b.addEventListener('click', async () => {
       const ok = await confirmDialog('Apagar esta avaliação?');
       if (!ok) return;
+      if (editingAssessmentId === b.dataset.delAssess) cancelEditAssessment();
       await deleteDoc(userDoc('bodyAssessments', b.dataset.delAssess));
       showToast('Avaliação apagada.');
     });
