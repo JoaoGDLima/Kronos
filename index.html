@@ -1431,6 +1431,106 @@
   </div>
 </div>
 
+<!-- MODAL: AVALIAÇÃO CORPORAL -->
+<div class="modal-overlay" id="modal-avaliacao">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h2>Avaliação corporal</h2>
+      <button type="button" class="modal-close" data-close-modal aria-label="Fechar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="panel">
+        <h2>Nova avaliação <span class="n">// registro</span></h2>
+        <form id="form-assessment">
+          <label>Data do lançamento</label>
+          <input type="date" id="assess-date" required>
+
+          <details class="exam-fieldset" open>
+            <summary>Dobras cutâneas (mm)</summary>
+            <div class="exam-fieldset-body">
+              <div class="row">
+                <div><label>Peitoral</label><input type="number" step="any" min="0" id="assess-skin-peitoral"></div>
+                <div><label>Tricipital</label><input type="number" step="any" min="0" id="assess-skin-tricipital"></div>
+              </div>
+              <div class="row">
+                <div><label>Bicipital</label><input type="number" step="any" min="0" id="assess-skin-bicipital"></div>
+                <div><label>Axilar média</label><input type="number" step="any" min="0" id="assess-skin-axilar"></div>
+              </div>
+              <div class="row">
+                <div><label>Subescapular</label><input type="number" step="any" min="0" id="assess-skin-subescapular"></div>
+                <div><label>Supra-ilíaca</label><input type="number" step="any" min="0" id="assess-skin-supra-iliaca"></div>
+              </div>
+              <div class="row">
+                <div><label>Supra-espinhal</label><input type="number" step="any" min="0" id="assess-skin-supra-espinhal"></div>
+                <div><label>Abdominal</label><input type="number" step="any" min="0" id="assess-skin-abdominal"></div>
+              </div>
+              <div class="row">
+                <div><label>Coxa</label><input type="number" step="any" min="0" id="assess-skin-coxa"></div>
+                <div><label>Panturrilha</label><input type="number" step="any" min="0" id="assess-skin-panturrilha"></div>
+              </div>
+            </div>
+          </details>
+
+          <details class="exam-fieldset">
+            <summary>Circunferências (cm)</summary>
+            <div class="exam-fieldset-body">
+              <div class="row">
+                <div><label>Torácico insp.</label><input type="number" step="any" min="0" id="assess-circ-torax-insp"></div>
+                <div><label>Torácico exp.</label><input type="number" step="any" min="0" id="assess-circ-torax-exp"></div>
+              </div>
+              <div class="row">
+                <div><label>Cintura</label><input type="number" step="any" min="0" id="assess-circ-cintura"></div>
+                <div><label>Abdômen</label><input type="number" step="any" min="0" id="assess-circ-abdomen"></div>
+              </div>
+              <div class="row">
+                <div><label>Quadril</label><input type="number" step="any" min="0" id="assess-circ-quadril"></div>
+              </div>
+              <div class="row">
+                <div><label>Braço relax. (E)</label><input type="number" step="any" min="0" id="assess-circ-braco-relax-e"></div>
+                <div><label>Braço relax. (D)</label><input type="number" step="any" min="0" id="assess-circ-braco-relax-d"></div>
+              </div>
+              <div class="row">
+                <div><label>Braço contr. (E)</label><input type="number" step="any" min="0" id="assess-circ-braco-contr-e"></div>
+                <div><label>Braço contr. (D)</label><input type="number" step="any" min="0" id="assess-circ-braco-contr-d"></div>
+              </div>
+              <div class="row">
+                <div><label>Antebraço (E)</label><input type="number" step="any" min="0" id="assess-circ-antebraco-e"></div>
+                <div><label>Antebraço (D)</label><input type="number" step="any" min="0" id="assess-circ-antebraco-d"></div>
+              </div>
+              <div class="row">
+                <div><label>Coxa prox. (E)</label><input type="number" step="any" min="0" id="assess-circ-coxa-prox-e"></div>
+                <div><label>Coxa prox. (D)</label><input type="number" step="any" min="0" id="assess-circ-coxa-prox-d"></div>
+              </div>
+              <div class="row">
+                <div><label>Coxa média (E)</label><input type="number" step="any" min="0" id="assess-circ-coxa-media-e"></div>
+                <div><label>Coxa média (D)</label><input type="number" step="any" min="0" id="assess-circ-coxa-media-d"></div>
+              </div>
+              <div class="row">
+                <div><label>Coxa dist. (E)</label><input type="number" step="any" min="0" id="assess-circ-coxa-dist-e"></div>
+                <div><label>Coxa dist. (D)</label><input type="number" step="any" min="0" id="assess-circ-coxa-dist-d"></div>
+              </div>
+              <div class="row">
+                <div><label>Perna (E)</label><input type="number" step="any" min="0" id="assess-circ-perna-e"></div>
+                <div><label>Perna (D)</label><input type="number" step="any" min="0" id="assess-circ-perna-d"></div>
+              </div>
+            </div>
+          </details>
+
+          <label>Observações (opcional)</label>
+          <textarea id="assess-notes" rows="2"></textarea>
+
+          <button type="submit" class="btn" id="assess-submit">Salvar avaliação</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>Avaliações registradas <span class="n" id="assess-count"></span></h2>
+        <div id="assess-list"><div class="empty-state">Nenhuma avaliação registrada ainda.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: PESO -->
 <div class="modal-overlay" id="modal-peso">
   <div class="modal-sheet">
@@ -1780,6 +1880,10 @@
         <span class="di-icon"><svg viewBox="0 0 24 24"><path d="M12 3v3M5.6 5.6l2.1 2.1M3 12h3M5.6 18.4l2.1-2.1M18.4 18.4l-2.1-2.1M21 12h-3M18.4 5.6l-2.1 2.1"/><circle cx="12" cy="12" r="3"/></svg></span>
         <span>Peso corporal</span>
       </button>
+      <button type="button" class="drawer-item" data-drawer-tab="avaliacao">
+        <span class="di-icon"><svg viewBox="0 0 24 24"><path d="M4 21V9M4 9l4-4 4 4 4-4 4 4"/><path d="M4 21h16"/></svg></span>
+        <span>Avaliação corporal</span>
+      </button>
     </div>
     <div class="drawer-footer">
       <button type="button" id="user-badge" title="Sair"></button>
@@ -2122,6 +2226,7 @@ let weightLogs = [];
 let stockEntries = [];
 let lastAppDetailData = null;
 let nextAppDetailData = null;
+let bodyAssessments = [];
 
 const WEEKDAY_LABELS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
@@ -4147,6 +4252,112 @@ function renderWeightChart(){
 }
 
 /* ============================================================
+   7c-4) AVALIAÇÃO CORPORAL (dobras cutâneas e circunferências)
+============================================================ */
+const ASSESS_SKINFOLD_FIELDS = [
+  { key: 'peitoral', id: 'assess-skin-peitoral', label: 'Dobra peitoral' },
+  { key: 'tricipital', id: 'assess-skin-tricipital', label: 'Dobra tricipital' },
+  { key: 'bicipital', id: 'assess-skin-bicipital', label: 'Dobra bicipital' },
+  { key: 'axilar', id: 'assess-skin-axilar', label: 'Dobra axilar média' },
+  { key: 'subescapular', id: 'assess-skin-subescapular', label: 'Dobra subescapular' },
+  { key: 'supraIliaca', id: 'assess-skin-supra-iliaca', label: 'Dobra supra-ilíaca' },
+  { key: 'supraEspinhal', id: 'assess-skin-supra-espinhal', label: 'Dobra supra-espinhal' },
+  { key: 'abdominal', id: 'assess-skin-abdominal', label: 'Dobra abdominal' },
+  { key: 'coxa', id: 'assess-skin-coxa', label: 'Dobra coxa' },
+  { key: 'panturrilha', id: 'assess-skin-panturrilha', label: 'Dobra panturrilha' }
+];
+const ASSESS_CIRC_FIELDS = [
+  { key: 'toraxInsp', id: 'assess-circ-torax-insp', label: 'Torácico insp.' },
+  { key: 'toraxExp', id: 'assess-circ-torax-exp', label: 'Torácico exp.' },
+  { key: 'cintura', id: 'assess-circ-cintura', label: 'Cintura' },
+  { key: 'abdomen', id: 'assess-circ-abdomen', label: 'Abdômen' },
+  { key: 'quadril', id: 'assess-circ-quadril', label: 'Quadril' },
+  { key: 'bracoRelaxE', id: 'assess-circ-braco-relax-e', label: 'Braço relax. (E)' },
+  { key: 'bracoRelaxD', id: 'assess-circ-braco-relax-d', label: 'Braço relax. (D)' },
+  { key: 'bracoContrE', id: 'assess-circ-braco-contr-e', label: 'Braço contr. (E)' },
+  { key: 'bracoContrD', id: 'assess-circ-braco-contr-d', label: 'Braço contr. (D)' },
+  { key: 'antebracoE', id: 'assess-circ-antebraco-e', label: 'Antebraço (E)' },
+  { key: 'antebracoD', id: 'assess-circ-antebraco-d', label: 'Antebraço (D)' },
+  { key: 'coxaProxE', id: 'assess-circ-coxa-prox-e', label: 'Coxa prox. (E)' },
+  { key: 'coxaProxD', id: 'assess-circ-coxa-prox-d', label: 'Coxa prox. (D)' },
+  { key: 'coxaMediaE', id: 'assess-circ-coxa-media-e', label: 'Coxa média (E)' },
+  { key: 'coxaMediaD', id: 'assess-circ-coxa-media-d', label: 'Coxa média (D)' },
+  { key: 'coxaDistE', id: 'assess-circ-coxa-dist-e', label: 'Coxa dist. (E)' },
+  { key: 'coxaDistD', id: 'assess-circ-coxa-dist-d', label: 'Coxa dist. (D)' },
+  { key: 'pernaE', id: 'assess-circ-perna-e', label: 'Perna (E)' },
+  { key: 'pernaD', id: 'assess-circ-perna-d', label: 'Perna (D)' }
+];
+
+const formAssessment = document.getElementById('form-assessment');
+const assessDateInput = document.getElementById('assess-date');
+assessDateInput.value = new Date().toISOString().slice(0, 10);
+
+formAssessment.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!db) return;
+  const date = assessDateInput.value;
+  if (!date) return;
+  const notes = document.getElementById('assess-notes').value.trim();
+
+  const data = { date, notes, createdAt: serverTimestamp() };
+  ASSESS_SKINFOLD_FIELDS.forEach(f => {
+    const raw = document.getElementById(f.id).value;
+    if (raw !== '') data['skin_' + f.key] = parseFloat(raw);
+  });
+  ASSESS_CIRC_FIELDS.forEach(f => {
+    const raw = document.getElementById(f.id).value;
+    if (raw !== '') data['circ_' + f.key] = parseFloat(raw);
+  });
+
+  await addDoc(userCollection('bodyAssessments'), data);
+  showToast('Avaliação registrada.');
+  formAssessment.reset();
+  assessDateInput.value = new Date().toISOString().slice(0, 10);
+});
+
+function renderAssessmentList(){
+  const box = document.getElementById('assess-list');
+  if (!box) return;
+  const countEl = document.getElementById('assess-count');
+  if (countEl) countEl.textContent = bodyAssessments.length ? `// ${bodyAssessments.length}` : '';
+  if (!bodyAssessments.length) {
+    box.innerHTML = `<div class="empty-state">Nenhuma avaliação registrada ainda.</div>`;
+    return;
+  }
+  box.innerHTML = bodyAssessments.map(a => {
+    const dateLabel = new Date(a.date + 'T00:00:00').toLocaleDateString('pt-BR');
+    const skinVals = ASSESS_SKINFOLD_FIELDS
+      .filter(f => a['skin_' + f.key] !== undefined && a['skin_' + f.key] !== null)
+      .map(f => `<span class="exam-val"><span class="exam-val-label">${escapeHtml(f.label)}</span><span class="exam-val-num">${fmt(a['skin_' + f.key])} mm</span></span>`)
+      .join('');
+    const circVals = ASSESS_CIRC_FIELDS
+      .filter(f => a['circ_' + f.key] !== undefined && a['circ_' + f.key] !== null)
+      .map(f => `<span class="exam-val"><span class="exam-val-label">${escapeHtml(f.label)}</span><span class="exam-val-num">${fmt(a['circ_' + f.key])} cm</span></span>`)
+      .join('');
+    return `
+    <div class="exam-item">
+      <div class="exam-item-top">
+        <span class="exam-date">${dateLabel}</span>
+        <button type="button" data-del-assess="${a.id}" title="Apagar"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
+      </div>
+      ${skinVals ? `<div class="exam-values">${skinVals}</div>` : ''}
+      ${circVals ? `<div class="exam-values" style="margin-top:8px;">${circVals}</div>` : ''}
+      ${!skinVals && !circVals ? '<span class="report-empty">Sem valores preenchidos.</span>' : ''}
+      ${a.notes ? `<div class="symptom-notes">${escapeHtml(a.notes)}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  box.querySelectorAll('[data-del-assess]').forEach(b => {
+    b.addEventListener('click', async () => {
+      const ok = await confirmDialog('Apagar esta avaliação?');
+      if (!ok) return;
+      await deleteDoc(userDoc('bodyAssessments', b.dataset.delAssess));
+      showToast('Avaliação apagada.');
+    });
+  });
+}
+
+/* ============================================================
    7d) RELATÓRIO PARA CONSULTA MÉDICA
 ============================================================ */
 function renderReport(){
@@ -4445,7 +4656,7 @@ let unsubscribers = [];
 
 function startDataListeners(){
   if (!db) {
-    renderSubstances(); renderCycles(); renderHistory(); refreshSubstanceSelects(); renderSymptomList(); renderExamList(); renderWeightList(); renderStockEntryList();
+    renderSubstances(); renderCycles(); renderHistory(); refreshSubstanceSelects(); renderSymptomList(); renderExamList(); renderWeightList(); renderStockEntryList(); renderAssessmentList();
     return;
   }
   unsubscribers.push(onSnapshot(userCollection('substances'), (snap) => {
@@ -4490,6 +4701,11 @@ function startDataListeners(){
     renderStockEntryList();
     renderDashboard();
     renderCycles();
+  }));
+
+  unsubscribers.push(onSnapshot(query(userCollection('bodyAssessments'), orderBy('date', 'desc')), (snap) => {
+    bodyAssessments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderAssessmentList();
   }));
 }
 
