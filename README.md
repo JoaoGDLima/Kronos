@@ -145,6 +145,20 @@ const firebaseConfig = {
   faixa de referência destacada no fundo do gráfico.
 - **Peso corporal**: registro rápido de peso (kg) pelo botão flutuante, com gráfico
   de evolução e variação no período, no mesmo padrão dos exames.
+- **Avaliação corporal**: registro de dobras cutâneas (mm) — peitoral, tricipital,
+  bicipital, axilar média, subescapular, supra-ilíaca, supra-espinhal, abdominal,
+  coxa e panturrilha — e circunferências (cm) — torácico insp./exp., cintura,
+  abdômen, quadril, e as medidas pareadas esquerda/direita de braço relaxado,
+  braço contraído, antebraço, coxa (proximal/média/distal) e perna. Campos
+  organizados em duas seções recolhíveis, todos opcionais, com data do
+  lançamento. Fica listado dentro do próprio modal, com opção de apagar.
+  Preenchendo as 7 dobras usadas na fórmula (peitoral, axilar média, tricipital,
+  subescapular, abdominal, supra-ilíaca e coxa), o app calcula automaticamente o
+  **percentual de gordura** pela equação de **Jackson & Pollock (7 dobras) + Siri**
+  — precisa de sexo e data de nascimento preenchidos no Perfil pra funcionar (usados
+  para calcular a densidade corporal). O valor calculado fica congelado em cada
+  registro (junto com a idade e o sexo usados no cálculo daquela vez), então não
+  muda se você atualizar o perfil depois.
 - **Relatório**: na aba Histórico, o botão "Relatório" monta um resumo (ciclo atual,
   adesão, totais por substância, exame mais recente do período e sintomas) pronto
   para imprimir ou salvar como PDF pelo próprio navegador, ou compartilhar via
@@ -180,7 +194,8 @@ frequência de uso:
   abre "Registrar aplicação", que é o uso mais frequente do dia a dia.
 - **Menu lateral** (ícone de três linhas no canto superior esquerdo do cabeçalho):
   reúne as seções de cadastro/consulta que você usa com menos frequência —
-  Substâncias, Ciclos, Sintomas e sensações, Exames de sangue e Peso corporal.
+  Substâncias, Ciclos, Sintomas e sensações, Exames de sangue, Avaliação corporal
+  e Peso corporal.
   Cada uma abre direto na tela com a lista e o formulário juntos.
 
 Todos os dados sincronizam em tempo real com o Firestore — se você abrir o app em

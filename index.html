@@ -1471,6 +1471,8 @@
             </div>
           </details>
 
+          <div id="assess-bf-note"></div>
+
           <details class="exam-fieldset">
             <summary>Circunferências (cm)</summary>
             <div class="exam-fieldset-body">
@@ -4288,6 +4290,51 @@ const ASSESS_CIRC_FIELDS = [
   { key: 'pernaD', id: 'assess-circ-perna-d', label: 'Perna (D)' }
 ];
 
+// os 7 pontos usados na equação de Jackson & Pollock (7 dobras)
+const JP7_KEYS = ['peitoral', 'axilar', 'tricipital', 'subescapular', 'abdominal', 'supraIliaca', 'coxa'];
+
+function calcBodyFatJP7(sum7, age, sex){
+  if (sum7 === null || age === null || !sex) return null;
+  const bodyDensity = sex === 'F'
+    ? 1.097 - 0.00046971 * sum7 + 0.00000056 * sum7 * sum7 - 0.00012828 * age
+    : 1.112 - 0.00043499 * sum7 + 0.00000055 * sum7 * sum7 - 0.00028826 * age;
+  if (!bodyDensity) return null;
+  return (495 / bodyDensity) - 450;
+}
+
+function getJP7Sum(){
+  let sum = 0;
+  for (const key of JP7_KEYS) {
+    const field = ASSESS_SKINFOLD_FIELDS.find(f => f.key === key);
+    const raw = document.getElementById(field.id).value;
+    if (raw === '') return null; // JP7 exige as 7 dobras preenchidas
+    sum += parseFloat(raw);
+  }
+  return sum;
+}
+
+function updateAssessBfNote(){
+  const note = document.getElementById('assess-bf-note');
+  if (!note) return;
+  const sum7 = getJP7Sum();
+  const age = calcAge(userProfile.birthDate);
+  const sex = userProfile.sex;
+  if (sum7 === null) {
+    note.innerHTML = '';
+    return;
+  }
+  if (age === null || !sex) {
+    note.innerHTML = `<div class="banner warn" style="margin-top:10px;">Defina data de nascimento e sexo no perfil para calcular o % de gordura.</div>`;
+    return;
+  }
+  const bf = calcBodyFatJP7(sum7, age, sex);
+  note.innerHTML = `<div class="dash-compact-total" style="margin-top:10px;">% de gordura estimado (Jackson &amp; Pollock 7 dobras + Siri) <b>${fmt(bf)}%</b></div>`;
+}
+JP7_KEYS.forEach(key => {
+  const field = ASSESS_SKINFOLD_FIELDS.find(f => f.key === key);
+  document.getElementById(field.id).addEventListener('input', updateAssessBfNote);
+});
+
 const formAssessment = document.getElementById('form-assessment');
 const assessDateInput = document.getElementById('assess-date');
 assessDateInput.value = new Date().toISOString().slice(0, 10);
@@ -4309,10 +4356,22 @@ formAssessment.addEventListener('submit', async (e) => {
     if (raw !== '') data['circ_' + f.key] = parseFloat(raw);
   });
 
+  const sum7 = getJP7Sum();
+  const age = calcAge(userProfile.birthDate);
+  const sex = userProfile.sex;
+  const bf = calcBodyFatJP7(sum7, age, sex);
+  if (bf !== null) {
+    data.bodyFatPercent = bf;
+    data.bodyFatMethod = 'Jackson & Pollock (7 dobras) + Siri';
+    data.ageAtAssessment = age;
+    data.sexAtAssessment = sex;
+  }
+
   await addDoc(userCollection('bodyAssessments'), data);
   showToast('Avaliação registrada.');
   formAssessment.reset();
   assessDateInput.value = new Date().toISOString().slice(0, 10);
+  updateAssessBfNote();
 });
 
 function renderAssessmentList(){
@@ -4340,6 +4399,7 @@ function renderAssessmentList(){
         <span class="exam-date">${dateLabel}</span>
         <button type="button" data-del-assess="${a.id}" title="Apagar"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
       </div>
+      ${a.bodyFatPercent !== undefined && a.bodyFatPercent !== null ? `<div class="report-stats" style="margin-bottom:10px;"><div class="rs-item"><span class="rs-label">% de gordura (${escapeHtml(a.bodyFatMethod || 'JP7 + Siri')})</span><span class="rs-val">${fmt(a.bodyFatPercent)}%</span></div></div>` : ''}
       ${skinVals ? `<div class="exam-values">${skinVals}</div>` : ''}
       ${circVals ? `<div class="exam-values" style="margin-top:8px;">${circVals}</div>` : ''}
       ${!skinVals && !circVals ? '<span class="report-empty">Sem valores preenchidos.</span>' : ''}
