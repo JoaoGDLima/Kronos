@@ -3149,11 +3149,25 @@ function openCycleDetail(cycle){
   `;
 
   if (stats.weeks) {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const rangeEnd = (stats.endDate && stats.endDate < today) ? stats.endDate : today;
+    const doneSet = new Set();
+    applications.forEach(a => {
+      if (a.cycleId !== cycle.id) return;
+      const d = a.appliedAt?.toDate ? a.appliedAt.toDate() : null;
+      if (!d) return;
+      const dOnly = new Date(d); dOnly.setHours(0, 0, 0, 0);
+      if (dOnly >= stats.startDate && dOnly <= rangeEnd) doneSet.add(a.batchId || a.id);
+    });
+    const done = doneSet.size;
+    const progressPct = stats.expectedApplications > 0 ? Math.min(100, (done / stats.expectedApplications) * 100) : 0;
+
     html += `<div class="report-stats" style="margin-top:10px;">
-      <div class="rs-item"><span class="rs-label">Aplicações previstas</span><span class="rs-val">${stats.expectedApplications}</span></div>
+      <div class="rs-item"><span class="rs-label">Aplicações realizadas</span><span class="rs-val">${done} / ${stats.expectedApplications}</span></div>
       <div class="rs-item"><span class="rs-label">Total do ciclo</span><span class="rs-val">${fmt(stats.totalMl)} ml</span></div>
       <div class="rs-item"><span class="rs-label">&nbsp;</span><span class="rs-val">${fmt(stats.totalMg)} mg</span></div>
     </div>`;
+    html += `<div class="stock-bar" style="margin-top:10px;"><div class="fill" style="width:${progressPct}%"></div></div>`;
     html += `<div class="report-stats" style="margin-top:10px;">
       <div class="rs-item"><span class="rs-label">Custo previsto${stats.costIncomplete ? ' (parcial)' : ''}</span><span class="rs-val">${fmtCurrency(stats.totalCost)}</span></div>
     </div>`;
@@ -4390,6 +4404,8 @@ function startDataListeners(){
   unsubscribers.push(onSnapshot(query(userCollection('stockEntries'), orderBy('date', 'desc')), (snap) => {
     stockEntries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderStockEntryList();
+    renderDashboard();
+    renderCycles();
   }));
 }
 
